@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Post</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #0f0f0f;
+            color: #f0ebe3;
+            font-family: 'DM Sans', sans-serif;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid #1e1e1e;
+            position: sticky;
+            top: 0;
+            background-color: #0f0f0f;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #ff6b35;
+            font-size: 18px;
+            cursor: pointer;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: #f0ebe3;
+        }
+
+        .form {
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .field input, .field textarea {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 14px;
+            border: 1px solid #2a2a2a;
+            background-color: #161616;
+            color: #f0ebe3;
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field input:focus, .field textarea:focus {
+            border-color: #ff6b35;
+        }
+
+        .field textarea {
+            height: 90px;
+            resize: none;
+            line-height: 1.6;
+        }
+
+        .field input::placeholder, .field textarea::placeholder {
+            color: #444;
+        }
+
+        .photo-upload {
+            border: 2px dashed #2a2a2a;
+            border-radius: 16px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            position: relative;
+            overflow: hidden;
+            background-color: #161616;
+        }
+
+        .photo-upload:hover {
+            border-color: #ff6b35;
+        }
+
+        .photo-upload-icon { font-size: 36px; margin-bottom: 10px; }
+        .photo-upload-text { font-size: 14px; color: #555; }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+        }
+
+        .file-input-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ingredient-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .ingredient-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .ingredient-input-wrap input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid #2a2a2a;
+            background-color: #161616;
+            color: #f0ebe3;
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .ingredient-input-wrap input:focus {
+            border-color: #ff6b35;
+        }
+
+        .ingredient-input-wrap input::placeholder { color: #444; }
+
+        .suggestions-box {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            margin-top: 4px;
+            overflow: hidden;
+            z-index: 100;
+            border: 1px solid #2a2a2a;
+        }
+
+        .suggestion-item {
+            padding: 11px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #f0ebe3;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background-color 0.15s;
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background-color: #2a2a2a; }
+
+        .small-btn {
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: none;
+            background-color: #ff6b35;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .small-btn:hover { background-color: #ff7f4f; }
+
+        .ingredient-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ingredient-tag {
+            background-color: #1a2a1a;
+            color: #7db87d;
+            border: 1px solid #2a3a2a;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ingredient-tag span {
+            cursor: pointer;
+            color: #7db87d;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .method-step {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #ff6b35;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 10px;
+        }
+
+        .method-step textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid #2a2a2a;
+            background-color: #161616;
+            color: #f0ebe3;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            resize: none;
+            height: 80px;
+            line-height: 1.6;
+            transition: border-color 0.2s;
+        }
+
+        .method-step textarea:focus { border-color: #7db87d; }
+        .method-step textarea::placeholder { color: #444; }
+
+        .remove-step-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: color 0.2s;
+        }
+
+        .remove-step-btn:hover { color: #ff6b35; }
+
+        .add-step-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px dashed #2a2a2a;
+            background: none;
+            color: #7db87d;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .add-step-btn:hover { border-color: #7db87d; }
+
+        .emoji-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .emoji-option {
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .emoji-option.selected {
+            border-color: #ff6b35;
+            background-color: #1e1e1e;
+        }
+
+        .submit-btn {
+            padding: 16px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #ff6b35, #ff9500);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .submit-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='/'">←</button>
+        <div class="header-title">New Recipe</div>
+    </div>
+
+    <div class="form">
+
+        <div class="field">
+            <div class="section-label">Your name</div>
+            <input type="text" id="username" placeholder="e.g. @you" />
+        </div>
+
+        <div class="field">
+            <div class="section-label">Recipe name</div>
+            <input type="text" id="title" placeholder="e.g. Homemade Pasta" />
+        </div>
+
+        <div class="field">
+            <div class="section-label">Description</div>
+            <textarea id="description" placeholder="Tell your friends about it..."></textarea>
+        </div>
+
+        <div class="field">
+            <div class="section-label">Photo</div>
+            <div class="photo-upload" id="photoUpload">
+                <div class="photo-upload-icon">📷</div>
+                <div class="photo-upload-text">Tap to add a photo</div>
+                <input type="file" id="imageUpload" accept="image/*" class="file-input-overlay" />
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="section-label">Emoji (if no photo)</div>
+            <div class="emoji-picker">
+                <span class="emoji-option selected" onclick="selectEmoji(this)">🍝</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍕</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍔</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🌮</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍜</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍱</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🥗</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍣</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🥘</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🍛</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🧆</span>
+                <span class="emoji-option" onclick="selectEmoji(this)">🥙</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="section-label">Ingredients</div>
+            <div class="ingredient-row">
+                <div class="ingredient-input-wrap">
+                    <input type="text" id="ingredientInput" placeholder="e.g. Pasta" autocomplete="off" />
+                    <div class="suggestions-box" id="suggestions"></div>
+                </div>
+                <button class="small-btn" type="button" onclick="addIngredient()">+</button>
+            </div>
+            <div class="ingredient-tags" id="ingredientList"></div>
+            <input type="hidden" id="ingredients" />
+        </div>
+
+        <div class="field">
+            <div class="section-label">Method</div>
+            <div id="methodSteps"></div>
+            <button class="add-step-btn" type="button" onclick="addStep()">+ Add step</button>
+            <input type="hidden" id="method" />
+        </div>
+
+        <button class="submit-btn" type="button" onclick="submitPost()">Post Recipe 🔥</button>
+
+    </div>
+
+    <script>
+        let selectedEmoji = '🍝';
+        let ingredientItems = [];
+        let methodSteps = [];
+
+        const commonIngredients = [
+            'Pasta', 'Rice', 'Chicken', 'Beef', 'Pork', 'Salmon', 'Tuna', 'Eggs',
+            'Butter', 'Olive Oil', 'Garlic', 'Onion', 'Tomato', 'Potato', 'Carrot',
+            'Broccoli', 'Spinach', 'Mushrooms', 'Cheese', 'Mozzarella', 'Parmesan',
+            'Cream', 'Milk', 'Flour', 'Sugar', 'Salt', 'Pepper', 'Paprika', 'Cumin',
+            'Basil', 'Oregano', 'Thyme', 'Rosemary', 'Chilli', 'Soy Sauce', 'Lemon',
+            'Lime', 'Ginger', 'Coconut Milk', 'Bread', 'Bacon', 'Pancetta', 'Chorizo',
+            'Prawns', 'Tofu', 'Chickpeas', 'Lentils', 'Kidney Beans', 'Avocado',
+            'Coriander', 'Parsley', 'Spring Onion', 'Celery', 'Capsicum', 'Zucchini',
+            'Eggplant', 'Sweet Potato', 'Pumpkin', 'Corn', 'Peas', 'Asparagus'
+        ];
+
+        // Photo preview
+        document.getElementById('imageUpload').addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const upload = document.getElementById('photoUpload');
+                    upload.innerHTML = `
+                        <img src="${e.target.result}" class="photo-preview" />
+                        <input type="file" id="imageUpload" accept="image/*" class="file-input-overlay" />
+                    `;
+                    document.getElementById('imageUpload').addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            const r = new FileReader();
+                            r.onload = function(ev) {
+                                document.querySelector('.photo-preview').src = ev.target.result;
+                            };
+                            r.readAsDataURL(this.files[0]);
+                        }
+                    });
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Emoji
+        function selectEmoji(el) {
+            document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedEmoji = el.textContent;
+        }
+
+        // Suggestions
+        function showSuggestions(query) {
+            const box = document.getElementById('suggestions');
+            if (query.length < 2) { box.style.display = 'none'; return; }
+            const matches = commonIngredients.filter(i =>
+                i.toLowerCase().startsWith(query.toLowerCase()) && !ingredientItems.includes(i)
+            ).slice(0, 5);
+            if (matches.length === 0) { box.style.display = 'none'; return; }
+            box.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSuggestion('${m}')">${m}</div>`).join('');
+            box.style.display = 'block';
+        }
+
+        function selectSuggestion(text) {
+            ingredientItems.push(text);
+            document.getElementById('ingredientInput').value = '';
+            document.getElementById('suggestions').style.display = 'none';
+            renderIngredients();
+            updateIngredientsField();
+        }
+
+        // Ingredients
+        function addIngredient() {
+            const input = document.getElementById('ingredientInput');
+            const text = input.value.trim();
+            if (text === '') return;
+            ingredientItems.push(text);
+            input.value = '';
+            document.getElementById('suggestions').style.display = 'none';
+            renderIngredients();
+            updateIngredientsField();
+        }
+
+        function removeIngredient(index) {
+            ingredientItems.splice(index, 1);
+            renderIngredients();
+            updateIngredientsField();
+        }
+
+        function renderIngredients() {
+            const list = document.getElementById('ingredientList');
+            list.innerHTML = ingredientItems.map((item, index) => `
+                <div class="ingredient-tag">
+                    ${item}
+                    <span onclick="removeIngredient(${index})">×</span>
+                </div>
+            `).join('');
+        }
+
+        function updateIngredientsField() {
+            document.getElementById('ingredients').value = ingredientItems.join(', ');
+        }
+
+        // Method
+        function addStep() {
+            methodSteps.push('');
+            renderSteps();
+        }
+
+        function removeStep(index) {
+            methodSteps.splice(index, 1);
+            renderSteps();
+            updateMethodField();
+        }
+
+        function updateStep(index, value) {
+            methodSteps[index] = value;
+            updateMethodField();
+        }
+
+        function renderSteps() {
+            const container = document.getElementById('methodSteps');
+            container.innerHTML = methodSteps.map((step, index) => `
+                <div class="method-step">
+                    <div class="step-number">${index + 1}</div>
+                    <textarea placeholder="Describe this step..." oninput="updateStep(${index}, this.value)">${step}</textarea>
+                    <button class="remove-step-btn" type="button" onclick="removeStep(${index})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function updateMethodField() {
+            document.getElementById('method').value = methodSteps.join('||');
+        }
+
+        // Submit
+        async function submitPost() {
+            const username = document.getElementById('username').value.trim();
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const ingredients = document.getElementById('ingredients').value.trim();
+            const method = document.getElementById('method').value.trim();
+
+            if (!username || !title || !description || !ingredients) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('ingredients', ingredients);
+            formData.append('emoji', selectedEmoji);
+            formData.append('method', method);
+
+            const imageInput = document.getElementById('imageUpload');
+            if (imageInput && imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            await fetch('/api/posts', {
+                method: 'POST',
+                body: formData
+            });
+
+            window.location.href = '/';
+        }
+
+        // Event listeners
+        document.getElementById('ingredientInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { document.getElementById('suggestions').style.display = 'none'; addIngredient(); }
+        });
+
+        document.getElementById('ingredientInput').addEventListener('input', function() {
+            showSuggestions(this.value);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#suggestions') && e.target.id !== 'ingredientInput') {
+                document.getElementById('suggestions').style.display = 'none';
+            }
+        });
+
+        // Start with one step
+        addStep();
+    </script>
+
+</body>
+</html>
