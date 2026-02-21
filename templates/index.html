@@ -99,6 +99,11 @@
             object-fit: cover;
         }
 
+        .card-emoji {
+            font-size: 70px;
+            display: block;
+        }
+
         .card-body {
             padding: 16px;
         }
@@ -235,9 +240,9 @@
             <div class="card">
                 <div class="card-image">
                     {% if post.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" />
+                        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="{{ post.title }}" />
                     {% else %}
-                        {{ post.emoji }}
+                        <span class="card-emoji">{{ post.emoji or '🍽️' }}</span>
                     {% endif %}
                 </div>
                 <div class="card-body">
