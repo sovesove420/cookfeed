@@ -1,20 +1,38 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sqlalchemy import text
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cookfeed.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    profile_pic = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class ShoppingItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +41,8 @@ class ShoppingItem(db.Model):
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    username = db.Column(db.String(50), nullable=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     ingredients = db.Column(db.String(500), nullable=False)
@@ -33,11 +52,28 @@ class Post(db.Model):
     method = db.Column(db.Text, nullable=True)
     reactions = db.Column(db.Integer, default=0)
 
+    @property
+    def display_username(self):
+        return self.author.username if self.author else (self.username or 'Anonymous')
+
+    author = db.relationship('User', backref=db.backref('posts', lazy=True))
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to post a recipe.'
+
 with app.app_context():
     db.create_all()
-    # Add reactions column for existing databases
     try:
         db.session.execute(text("ALTER TABLE post ADD COLUMN reactions INTEGER DEFAULT 0"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    try:
+        db.session.execute(text("ALTER TABLE post ADD COLUMN user_id INTEGER REFERENCES user(id)"))
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -51,13 +87,65 @@ def home():
 def shopping():
     return render_template('shopping.html')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        if not username or not email or not password:
+            flash('Please fill in all fields.', 'error')
+            return redirect(url_for('register'))
+        if User.query.filter_by(username=username).first():
+            flash('Username already taken.', 'error')
+            return redirect(url_for('register'))
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered.', 'error')
+            return redirect(url_for('register'))
+        user = User(username=username, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
+        return redirect(url_for('home'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            next_page = request.args.get('next', url_for('home'))
+            return redirect(next_page)
+        flash('Invalid username or password.', 'error')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+@app.route('/profile')
+@login_required
+def profile():
+    posts = Post.query.filter_by(user_id=current_user.id).order_by(Post.created_at.desc()).all()
+    return render_template('profile.html', user=current_user, posts=posts)
+
 @app.route('/new')
+@login_required
 def new_post():
     return render_template('new_post.html')
 
 @app.route('/api/posts', methods=['POST'])
+@login_required
 def create_post():
-    username = request.form.get('username')
     title = request.form.get('title')
     description = request.form.get('description')
     ingredients = request.form.get('ingredients')
@@ -74,7 +162,8 @@ def create_post():
             image_filename = filename
 
     post = Post(
-        username=username,
+        user_id=current_user.id,
+        username=current_user.username,
         title=title,
         description=description,
         ingredients=ingredients,

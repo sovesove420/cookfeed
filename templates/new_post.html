@@ -350,11 +350,6 @@
     <div class="form">
 
         <div class="field">
-            <div class="section-label">Your name</div>
-            <input type="text" id="username" placeholder="e.g. @you" />
-        </div>
-
-        <div class="field">
             <div class="section-label">Recipe name</div>
             <input type="text" id="title" placeholder="e.g. Homemade Pasta" />
         </div>
@@ -550,19 +545,17 @@
 
         // Submit
         async function submitPost() {
-            const username = document.getElementById('username').value.trim();
             const title = document.getElementById('title').value.trim();
             const description = document.getElementById('description').value.trim();
             const ingredients = document.getElementById('ingredients').value.trim();
             const method = document.getElementById('method').value.trim();
 
-            if (!username || !title || !description || !ingredients) {
-                alert('Please fill in all fields!');
+            if (!title || !description || !ingredients) {
+                alert('Please fill in recipe name, description, and ingredients!');
                 return;
             }
 
             const formData = new FormData();
-            formData.append('username', username);
             formData.append('title', title);
             formData.append('description', description);
             formData.append('ingredients', ingredients);

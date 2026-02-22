@@ -230,7 +230,13 @@
         <div class="header-title">Cook<span>Feed</span></div>
         <div class="header-btns">
             <button class="icon-btn" onclick="window.location.href='/shopping'">🛒</button>
-            <button class="icon-btn" onclick="window.location.href='/new'">➕</button>
+            {% if current_user.is_authenticated %}
+                <button class="icon-btn" onclick="window.location.href='/profile'">👤</button>
+                <button class="icon-btn" onclick="window.location.href='/new'">➕</button>
+            {% else %}
+                <button class="icon-btn" onclick="window.location.href='/login'">🔐</button>
+                <button class="icon-btn" onclick="window.location.href='/register'">➕</button>
+            {% endif %}
         </div>
     </div>
 
@@ -247,8 +253,8 @@
                 </div>
                 <div class="card-body">
                     <div class="card-header">
-                        <div class="avatar">{{ post.username[1] | upper if post.username.startswith('@') else post.username[0] | upper }}</div>
-                        <div class="card-user">{{ post.username }}</div>
+                        <div class="avatar">{{ post.display_username[1] | upper if post.display_username.startswith('@') else post.display_username[0] | upper }}</div>
+                                                <div class="card-user">{{ post.display_username if post.display_username.startswith('@') else ('@' + post.display_username) }}</div>
                         <div class="card-time">{{ post.created_at.strftime('%d %b') }}</div>
                     </div>
                     <div class="card-title">{{ post.title }}</div>
