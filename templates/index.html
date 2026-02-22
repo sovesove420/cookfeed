@@ -264,7 +264,7 @@
                     </div>
                     {% endif %}
                     <div class="card-actions">
-                        <button class="btn btn-react">🔥 React</button>
+                        <button class="btn btn-react" data-post-id="{{ post.id }}">🔥 {{ post.reactions or 0 }}</button>
                         <button class="btn btn-save" onclick="addToList('{{ post.ingredients }}')">🛒 Add to List</button>
                     </div>
                 </div>
@@ -281,15 +281,19 @@
 
     <script>
         document.querySelectorAll('.btn-react').forEach(button => {
-            button.addEventListener('click', function() {
-                if (this.classList.contains('reacted')) {
-                    this.textContent = '🔥 React';
-                    this.classList.remove('reacted');
-                    this.style.backgroundColor = '#ff6b35';
-                } else {
-                    this.textContent = '🔥 Reacted!';
-                    this.classList.add('reacted');
-                    this.style.backgroundColor = '#ff9500';
+            button.addEventListener('click', async function() {
+                const postId = this.dataset.postId;
+                if (!postId) return;
+                try {
+                    const resp = await fetch(`/api/posts/${postId}/react`, { method: 'POST' });
+                    const data = await resp.json();
+                    if (resp.ok) {
+                        this.textContent = '🔥 ' + data.reactions;
+                        this.classList.add('reacted');
+                        this.style.backgroundColor = '#ff9500';
+                    }
+                } catch (e) {
+                    console.error('Failed to react', e);
                 }
             });
         });

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -30,9 +31,16 @@ class Post(db.Model):
     image = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     method = db.Column(db.Text, nullable=True)
+    reactions = db.Column(db.Integer, default=0)
 
 with app.app_context():
     db.create_all()
+    # Add reactions column for existing databases
+    try:
+        db.session.execute(text("ALTER TABLE post ADD COLUMN reactions INTEGER DEFAULT 0"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 @app.route('/')
 def home():
@@ -79,6 +87,13 @@ def create_post():
     db.session.commit()
     return jsonify({'message': 'created', 'id': post.id})
 
+@app.route('/api/posts/<int:post_id>/react', methods=['POST'])
+def react_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    post.reactions = (post.reactions or 0) + 1
+    db.session.commit()
+    return jsonify({'reactions': post.reactions})
+
 @app.route('/api/items', methods=['GET'])
 def get_items():
     items = ShoppingItem.query.all()
@@ -105,6 +120,8 @@ def delete_item(item_id):
     db.session.delete(item)
     db.session.commit()
     return jsonify({'message': 'deleted'})
+
+  
 
 if __name__ == '__main__':
     import os
