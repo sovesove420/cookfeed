@@ -4,12 +4,18 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from sqlalchemy import text
 from datetime import datetime
 import os
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', ''),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', ''),
+)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cookfeed.db'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 db = SQLAlchemy(app)
@@ -47,7 +53,7 @@ class Post(db.Model):
     description = db.Column(db.String(500), nullable=False)
     ingredients = db.Column(db.String(500), nullable=False)
     emoji = db.Column(db.String(10), default='🍽️')
-    image = db.Column(db.String(200), nullable=True)
+    image = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     method = db.Column(db.Text, nullable=True)
     reactions = db.Column(db.Integer, default=0)
@@ -152,14 +158,15 @@ def create_post():
     emoji = request.form.get('emoji')
     method = request.form.get('method')
 
-    image_filename = None
+    image_url = None
     if 'image' in request.files:
         file = request.files['image']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image_filename = filename
+        if file and file.filename and allowed_file(file.filename):
+            try:
+                result = cloudinary.uploader.upload(file, use_filename=True)
+                image_url = result.get('secure_url') or result.get('url')
+            except Exception:
+                pass
 
     post = Post(
         user_id=current_user.id,
@@ -168,7 +175,7 @@ def create_post():
         description=description,
         ingredients=ingredients,
         emoji=emoji,
-        image=image_filename,
+        image=image_url,
         method=method
 
     )

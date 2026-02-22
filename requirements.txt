@@ -1,3 +1,4 @@
+cloudinary
 flask
 flask-login
 flask-sqlalchemy

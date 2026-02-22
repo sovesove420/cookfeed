@@ -246,7 +246,7 @@
             <div class="card">
                 <div class="card-image">
                     {% if post.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="{{ post.title }}" />
+                        <img src="{{ post.image if post.image.startswith('http') else url_for('static', filename='uploads/' + post.image) }}" alt="{{ post.title }}" />
                     {% else %}
                         <span class="card-emoji">{{ post.emoji or '🍽️' }}</span>
                     {% endif %}
