@@ -15,12 +15,7 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
-uri = os.environ.get('DATABASE_URL', 'sqlite:///cookfeed.db')
-if uri.startswith('postgres://'):
-    uri = uri.replace('postgres://', 'postgresql+pg8000://', 1)
-if uri.startswith('postgresql://'):
-    uri = uri.replace('postgresql://', 'postgresql+pg8000://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = uri
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cookfeed.db'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 db = SQLAlchemy(app)
@@ -57,7 +52,6 @@ class Post(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     ingredients = db.Column(db.String(500), nullable=False)
-    emoji = db.Column(db.String(10), default='🍽️')
     image = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     method = db.Column(db.Text, nullable=True)
@@ -160,7 +154,6 @@ def create_post():
     title = request.form.get('title')
     description = request.form.get('description')
     ingredients = request.form.get('ingredients')
-    emoji = request.form.get('emoji')
     method = request.form.get('method')
 
     image_url = None
@@ -179,7 +172,6 @@ def create_post():
         title=title,
         description=description,
         ingredients=ingredients,
-        emoji=emoji,
         image=image_url,
         method=method
 

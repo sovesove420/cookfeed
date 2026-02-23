@@ -303,26 +303,6 @@
 
         .add-step-btn:hover { border-color: #7db87d; }
 
-        .emoji-picker {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .emoji-option {
-            font-size: 28px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 12px;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .emoji-option.selected {
-            border-color: #ff6b35;
-            background-color: #1e1e1e;
-        }
-
         .submit-btn {
             padding: 16px;
             border-radius: 16px;
@@ -369,25 +349,6 @@
         </div>
 
         <div class="field">
-            <div class="section-label">Emoji (optional – fallback when no photo)</div>
-            <div class="field-hint">Only shown on your post if you don't upload a photo above.</div>
-            <div class="emoji-picker">
-                <span class="emoji-option selected" onclick="selectEmoji(this)">🍝</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍕</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍔</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🌮</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍜</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍱</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🥗</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍣</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🥘</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🍛</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🧆</span>
-                <span class="emoji-option" onclick="selectEmoji(this)">🥙</span>
-            </div>
-        </div>
-
-        <div class="field">
             <div class="section-label">Ingredients</div>
             <div class="ingredient-row">
                 <div class="ingredient-input-wrap">
@@ -412,7 +373,6 @@
     </div>
 
     <script>
-        let selectedEmoji = '🍝';
         let ingredientItems = [];
         let methodSteps = [];
 
@@ -451,13 +411,6 @@
                 reader.readAsDataURL(this.files[0]);
             }
         });
-
-        // Emoji
-        function selectEmoji(el) {
-            document.querySelectorAll('.emoji-option').forEach(e => e.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedEmoji = el.textContent;
-        }
 
         // Suggestions
         function showSuggestions(query) {
@@ -559,7 +512,6 @@
             formData.append('title', title);
             formData.append('description', description);
             formData.append('ingredients', ingredients);
-            formData.append('emoji', selectedEmoji);
             formData.append('method', method);
 
             const imageInput = document.getElementById('imageUpload');
