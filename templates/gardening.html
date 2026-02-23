@@ -85,7 +85,7 @@
 
         .card-image-wrap {
             width: 100%;
-            height: 200px;
+            height: 160px;
             position: relative;
             overflow: hidden;
             background: linear-gradient(135deg, #1a2a1a, #1e1e1e);
@@ -127,27 +127,38 @@
         }
 
         .card-body {
-            padding: 16px;
+            padding: 14px;
+        }
+
+        .card-header-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         .card-title {
             font-family: 'Playfair Display', serif;
-            font-size: 20px;
+            font-size: 18px;
             color: #f0ebe3;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        }
+
+        .card-latin {
+            font-size: 11px;
+            color: #555;
+            font-style: italic;
         }
 
         .card-difficulty {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 500;
             color: #7db87d;
             background-color: #1a2a1a;
-            padding: 3px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
             border: 1px solid #2a3a2a;
+            margin-left: auto;
         }
 
         .card-difficulty.medium {
@@ -156,27 +167,44 @@
             border-color: #3a3028;
         }
 
-        .card-tips {
-            margin-top: 12px;
+        .card-chips {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
-        .tip {
-            font-size: 13px;
+        .chip {
+            font-size: 11px;
             color: #888;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            line-height: 1.5;
+            background-color: #1e1e1e;
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
         }
 
-        .tip-label {
+        .chip-label {
             color: #7db87d;
-            font-weight: 500;
-            flex-shrink: 0;
-            min-width: 70px;
+        }
+
+        .card-placeholder-img {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #444;
+        }
+
+        .nav-link {
+            margin-left: auto;
+            font-size: 13px;
+            color: #7db87d;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
         }
 
     </style>
@@ -186,6 +214,7 @@
     <div class="header">
         <button class="back-btn" onclick="window.location.href='/'">←</button>
         <div class="header-title">Gardening</div>
+        <a href="{{ url_for('garden_setup') }}" class="nav-link">Garden Setup</a>
     </div>
 
     <div class="intro">
@@ -196,19 +225,31 @@
         {% for plant in plants %}
         <div class="card">
             <div class="card-image-wrap">
-                <img src="{{ plant.image }}" alt="{{ plant.name }}" loading="lazy" />
+                {% if plant.image %}
+                    {% if plant.image.startswith('http') %}
+                        <img src="{{ plant.image }}" alt="{{ plant.name }}" loading="lazy" />
+                    {% else %}
+                        <img src="{{ url_for('static', filename=plant.image) }}" alt="{{ plant.name }}" loading="lazy" />
+                    {% endif %}
+                {% else %}
+                    <div class="card-placeholder-img">{{ plant.icon }}</div>
+                {% endif %}
                 <span class="card-category {{ plant.category }}">{{ plant.category }}</span>
                 <span class="card-icon">{{ plant.icon }}</span>
             </div>
             <div class="card-body">
-                <div class="card-title">
-                    {{ plant.name }}
+                <div class="card-header-row">
+                    <span class="card-title">{{ plant.name }}</span>
+                    {% if plant.latin_name %}<span class="card-latin">{{ plant.latin_name }}</span>{% endif %}
                     <span class="card-difficulty {{ plant.difficulty|lower }}">{{ plant.difficulty }}</span>
                 </div>
-                <div class="card-tips">
-                    <div class="tip"><span class="tip-label">Sun:</span> {{ plant.sunlight }}</div>
-                    <div class="tip"><span class="tip-label">Water:</span> {{ plant.water }}</div>
-                    <div class="tip"><span class="tip-label">Season:</span> {{ plant.season }}</div>
+                <div class="card-chips">
+                    <span class="chip"><span class="chip-label">Sun</span> {{ plant.sunlight }}</span>
+                    <span class="chip"><span class="chip-label">Water</span> {{ plant.water }}</span>
+                    {% if plant.soil %}<span class="chip"><span class="chip-label">Soil</span> {{ plant.soil }}</span>{% endif %}
+                    {% if plant.grow_location %}<span class="chip"><span class="chip-label">Grow</span> {{ plant.grow_location }}</span>{% endif %}
+                    {% if plant.harvest %}<span class="chip"><span class="chip-label">Harvest</span> {{ plant.harvest }}</span>{% endif %}
+                    <span class="chip"><span class="chip-label">Season</span> {{ plant.season }}</span>
                 </div>
             </div>
         </div>

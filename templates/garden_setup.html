@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Setup | CookFeed</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0f0f0f;
+            color: #f0ebe3;
+            font-family: 'DM Sans', sans-serif;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid #1e1e1e;
+            position: sticky;
+            top: 0;
+            background-color: #0f0f0f;
+            z-index: 10;
+        }
+        .back-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #ff6b35;
+            font-size: 18px;
+            cursor: pointer;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-btn:hover { background-color: #2a2a2a; }
+        .header-title { font-family: 'Playfair Display', serif; font-size: 20px; color: #f0ebe3; }
+        .nav-link { margin-left: auto; font-size: 13px; color: #7db87d; text-decoration: none; }
+        .nav-link:hover { text-decoration: underline; }
+        .content { padding: 20px 16px; }
+        .section {
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            color: #f0ebe3;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .section p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+        .checklist {
+            list-style: none;
+        }
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 28px;
+            position: relative;
+            font-size: 14px;
+            color: #c0c0c0;
+        }
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: #7db87d;
+        }
+        .warning-box {
+            background-color: #2a2018;
+            border: 1px solid #3a3028;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin: 14px 0;
+        }
+        .warning-box strong { color: #ff8c5a; }
+        .warning-box p { margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='/'">←</button>
+        <div class="header-title">Garden Setup</div>
+        <a href="{{ url_for('gardening') }}" class="nav-link">Plant Guide</a>
+    </div>
+
+    <div class="content">
+        <div class="section">
+            <h2 class="section-title">Garden type</h2>
+            <p><strong>In-ground:</strong> Direct soil, most space. Best for veggies like tomatoes and peppers.</p>
+            <p><strong>Raised beds:</strong> Better drainage and soil control. Easier on your back.</p>
+            <p><strong>Containers:</strong> Pots and window boxes. Ideal for herbs and small veggies; portable.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Materials checklist</h2>
+            <ul class="checklist">
+                <li>Pots or raised bed frame</li>
+                <li>Potting mix or garden soil</li>
+                <li>Compost</li>
+                <li>Seeds or seedlings</li>
+                <li>Mulch (straw, wood chips)</li>
+                <li>Watering can or hose</li>
+                <li>Basic hand trowel</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Soil & drainage</h2>
+            <p>Use well-drained potting mix for containers. Add compost for nutrients. Avoid heavy clay without amendment. Ensure pots have drainage holes.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Layout grouping</h2>
+            <p><strong>High-water group:</strong> Basil, mint, parsley, lettuce, spinach—plant together for easier watering.</p>
+            <p><strong>Low-water group:</strong> Rosemary, thyme, oregano—keep away from heavy water to avoid root rot.</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Mint containment warning</h2>
+            <div class="warning-box">
+                <p><strong>Grow mint in a pot only.</strong> Mint spreads aggressively via rhizomes and will take over beds. Use a separate container or sink a pot into the ground.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Maintenance guide</h2>
+            <p>Water in the morning. Pinch herbs to encourage branching. Remove dead leaves. Harvest regularly. Mulch to retain moisture and suppress weeds.</p>
+        </div>
+    </div>
+
+    {% include '_chat_widget.html' %}
+</body>
+</html>

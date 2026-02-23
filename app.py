@@ -1,9 +1,11 @@
+import logging
+import os
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from sqlalchemy import text
 from datetime import datetime
-import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary
 import cloudinary.uploader
@@ -95,110 +97,196 @@ def shopping():
 GARDENING_PLANTS = [
     {
         "name": "Basil",
+        "latin_name": "Ocimum basilicum",
         "category": "herb",
         "icon": "🌿",
         "image": "https://images.unsplash.com/photo-1618375569909-3c8616cf7733?w=600&q=80",
         "sunlight": "Full sun (6+ hrs)",
-        "water": "Keep soil moist, water when top inch is dry",
-        "season": "Spring to fall (warm weather)",
+        "water": "Keep moist",
+        "season": "Spring–fall",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "8–12 in",
+        "soil": "Rich, well-drained",
+        "harvest": "Pinch leaves regularly",
+        "notes": "Frost-tender; start indoors.",
     },
     {
         "name": "Mint",
+        "latin_name": "Mentha spp.",
         "category": "herb",
         "icon": "🌱",
-        "image": "https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=600&q=80",
+        "image": "images/herbs/mint.jpg",
         "sunlight": "Partial to full sun",
-        "water": "Consistently moist soil",
-        "season": "Spring to fall",
+        "water": "Moist",
+        "season": "Spring–fall",
         "difficulty": "Easy",
+        "grow_location": "Pot",
+        "spacing": "12–18 in",
+        "soil": "Moist, fertile",
+        "harvest": "Cut stems as needed",
+        "notes": "Contain aggressively—grows fast.",
     },
     {
         "name": "Rosemary",
+        "latin_name": "Rosmarinus officinalis",
         "category": "herb",
         "icon": "🌿",
-        "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=600&q=80",
+        "image": "images/herbs/rosemary.jpg",
         "sunlight": "Full sun (6+ hrs)",
-        "water": "Let soil dry between waterings",
-        "season": "Year-round (perennial)",
+        "water": "Let dry between",
+        "season": "Year-round",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "24–36 in",
+        "soil": "Well-drained",
+        "harvest": "Snip sprigs",
+        "notes": "Perennial; drought-tolerant.",
     },
     {
         "name": "Parsley",
+        "latin_name": "Petroselinum crispum",
         "category": "herb",
         "icon": "🌱",
         "image": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=600&q=80",
         "sunlight": "Partial to full sun",
-        "water": "Keep soil lightly moist",
-        "season": "Spring to fall",
+        "water": "Lightly moist",
+        "season": "Spring–fall",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "6–8 in",
+        "soil": "Rich, moist",
+        "harvest": "Outer leaves first",
+        "notes": "Biennial; slow to germinate.",
     },
     {
         "name": "Thyme",
+        "latin_name": "Thymus vulgaris",
         "category": "herb",
         "icon": "🌿",
-        "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&q=80",
+        "image": "images/herbs/thyme.jpg",
         "sunlight": "Full sun",
-        "water": "Allow soil to dry between waterings",
-        "season": "Spring to fall (perennial)",
+        "water": "Dry between",
+        "season": "Year-round",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "8–12 in",
+        "soil": "Well-drained",
+        "harvest": "Clip stems",
+        "notes": "Perennial; avoid overwatering.",
+    },
+    {
+        "name": "Chives",
+        "latin_name": "Allium schoenoprasum",
+        "category": "herb",
+        "icon": "🌱",
+        "image": "images/herbs/chives.jpg",
+        "sunlight": "Full sun to part shade",
+        "water": "Moist",
+        "season": "Year-round",
+        "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "6–8 in",
+        "soil": "Well-drained",
+        "harvest": "Cut 2 in above base",
+        "notes": "Perennial; divide every few years.",
     },
     {
         "name": "Tomato",
+        "latin_name": "Solanum lycopersicum",
         "category": "vegetable",
         "icon": "🍅",
         "image": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&q=80",
         "sunlight": "Full sun (6–8 hrs)",
-        "water": "Regular, deep watering",
-        "season": "Spring to summer",
+        "water": "Regular, deep",
+        "season": "Spring–summer",
         "difficulty": "Medium",
+        "grow_location": "Bed",
+        "spacing": "24–36 in",
+        "soil": "Rich, well-drained",
+        "harvest": "When fully colored",
+        "notes": "Stake or cage; needs warmth.",
     },
     {
         "name": "Lettuce",
+        "latin_name": "Lactuca sativa",
         "category": "vegetable",
         "icon": "🥬",
         "image": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=600&q=80",
-        "sunlight": "Partial sun (4–6 hrs)",
-        "water": "Keep soil moist",
-        "season": "Cool seasons (spring, fall)",
+        "sunlight": "Partial (4–6 hrs)",
+        "water": "Moist",
+        "season": "Cool seasons",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "6–8 in",
+        "soil": "Moist, fertile",
+        "harvest": "Outer leaves or whole head",
+        "notes": "Bolts in heat; succession plant.",
     },
     {
         "name": "Spinach",
+        "latin_name": "Spinacia oleracea",
         "category": "vegetable",
         "icon": "🥬",
         "image": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600&q=80",
-        "sunlight": "Partial to full sun",
-        "water": "Consistently moist soil",
-        "season": "Cool weather (spring, fall)",
+        "sunlight": "Partial to full",
+        "water": "Moist",
+        "season": "Cool weather",
         "difficulty": "Easy",
+        "grow_location": "Either",
+        "spacing": "4–6 in",
+        "soil": "Rich, moist",
+        "harvest": "Leaf by leaf or whole",
+        "notes": "Quick crop; shade in summer.",
     },
     {
         "name": "Bell Pepper",
+        "latin_name": "Capsicum annuum",
         "category": "vegetable",
         "icon": "🫑",
         "image": "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=600&q=80",
         "sunlight": "Full sun (6+ hrs)",
-        "water": "Regular watering, well-drained soil",
-        "season": "Spring to fall",
+        "water": "Regular, drained",
+        "season": "Spring–fall",
         "difficulty": "Medium",
-    },
-    {
-        "name": "Chives",
-        "category": "herb",
-        "icon": "🌱",
-        "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-        "sunlight": "Full sun to partial shade",
-        "water": "Keep soil moist",
-        "season": "Spring to fall (perennial)",
-        "difficulty": "Easy",
+        "grow_location": "Bed",
+        "spacing": "18–24 in",
+        "soil": "Well-drained",
+        "harvest": "When firm and colored",
+        "notes": "Heat-loving; slow to ripen.",
     },
 ]
+
+
+def validate_plants(plants):
+    """Validate plant data has required fields and correct image paths."""
+    required = ["name", "image", "sunlight", "water", "season", "difficulty"]
+    for plant in plants:
+        for field in required:
+            if field not in plant or not plant[field]:
+                raise ValueError(f"Plant '{plant.get('name', 'UNKNOWN')}' missing: {field}")
+        if not plant["image"].startswith("images/") and not plant["image"].startswith("http"):
+            raise ValueError(f"{plant['name']} image must be inside static/images/ or be a URL")
+    # Optional: warn if local file does not exist
+    for plant in plants:
+        if plant["image"].startswith("images/"):
+            path = os.path.join(app.static_folder or "static", plant["image"])
+            if not os.path.isfile(path):
+                logging.warning(f"Plant '{plant['name']}' image not found: {path}")
+
+
+validate_plants(GARDENING_PLANTS)
 
 
 @app.route('/gardening')
 def gardening():
     return render_template('gardening.html', plants=GARDENING_PLANTS)
+
+
+@app.route('/garden-setup')
+def garden_setup():
+    return render_template('garden_setup.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -368,6 +456,5 @@ def chat():
 
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
