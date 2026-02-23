@@ -17,7 +17,9 @@ cloudinary.config(
 app = Flask(__name__)
 uri = os.environ.get('DATABASE_URL', 'sqlite:///cookfeed.db')
 if uri.startswith('postgres://'):
-    uri = uri.replace('postgres://', 'postgresql://', 1)
+    uri = uri.replace('postgres://', 'postgresql+pg8000://', 1)
+if uri.startswith('postgresql://'):
+    uri = uri.replace('postgresql://', 'postgresql+pg8000://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
