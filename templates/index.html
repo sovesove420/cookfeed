@@ -234,6 +234,7 @@
     <div class="header">
         <div class="header-title">Cook<span>Feed</span></div>
         <div class="header-btns">
+            <button class="icon-btn" onclick="window.location.href='/gardening'" title="Gardening">🌱</button>
             <button class="icon-btn" onclick="window.location.href='/shopping'">🛒</button>
             {% if current_user.is_authenticated %}
                 <button class="icon-btn" onclick="window.location.href='/profile'">👤</button>
@@ -322,5 +323,6 @@
         }
     </script>
 
+    {% include '_chat_widget.html' %}
 </body>
 </html>

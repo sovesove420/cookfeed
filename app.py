@@ -92,6 +92,114 @@ def home():
 def shopping():
     return render_template('shopping.html')
 
+GARDENING_PLANTS = [
+    {
+        "name": "Basil",
+        "category": "herb",
+        "icon": "🌿",
+        "image": "https://images.unsplash.com/photo-1618375569909-3c8616cf7733?w=600&q=80",
+        "sunlight": "Full sun (6+ hrs)",
+        "water": "Keep soil moist, water when top inch is dry",
+        "season": "Spring to fall (warm weather)",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Mint",
+        "category": "herb",
+        "icon": "🌱",
+        "image": "https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=600&q=80",
+        "sunlight": "Partial to full sun",
+        "water": "Consistently moist soil",
+        "season": "Spring to fall",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Rosemary",
+        "category": "herb",
+        "icon": "🌿",
+        "image": "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=600&q=80",
+        "sunlight": "Full sun (6+ hrs)",
+        "water": "Let soil dry between waterings",
+        "season": "Year-round (perennial)",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Parsley",
+        "category": "herb",
+        "icon": "🌱",
+        "image": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=600&q=80",
+        "sunlight": "Partial to full sun",
+        "water": "Keep soil lightly moist",
+        "season": "Spring to fall",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Thyme",
+        "category": "herb",
+        "icon": "🌿",
+        "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&q=80",
+        "sunlight": "Full sun",
+        "water": "Allow soil to dry between waterings",
+        "season": "Spring to fall (perennial)",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Tomato",
+        "category": "vegetable",
+        "icon": "🍅",
+        "image": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&q=80",
+        "sunlight": "Full sun (6–8 hrs)",
+        "water": "Regular, deep watering",
+        "season": "Spring to summer",
+        "difficulty": "Medium",
+    },
+    {
+        "name": "Lettuce",
+        "category": "vegetable",
+        "icon": "🥬",
+        "image": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=600&q=80",
+        "sunlight": "Partial sun (4–6 hrs)",
+        "water": "Keep soil moist",
+        "season": "Cool seasons (spring, fall)",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Spinach",
+        "category": "vegetable",
+        "icon": "🥬",
+        "image": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600&q=80",
+        "sunlight": "Partial to full sun",
+        "water": "Consistently moist soil",
+        "season": "Cool weather (spring, fall)",
+        "difficulty": "Easy",
+    },
+    {
+        "name": "Bell Pepper",
+        "category": "vegetable",
+        "icon": "🫑",
+        "image": "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=600&q=80",
+        "sunlight": "Full sun (6+ hrs)",
+        "water": "Regular watering, well-drained soil",
+        "season": "Spring to fall",
+        "difficulty": "Medium",
+    },
+    {
+        "name": "Chives",
+        "category": "herb",
+        "icon": "🌱",
+        "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+        "sunlight": "Full sun to partial shade",
+        "water": "Keep soil moist",
+        "season": "Spring to fall (perennial)",
+        "difficulty": "Easy",
+    },
+]
+
+
+@app.route('/gardening')
+def gardening():
+    return render_template('gardening.html', plants=GARDENING_PLANTS)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -214,7 +322,50 @@ def delete_item(item_id):
     db.session.commit()
     return jsonify({'message': 'deleted'})
 
-  
+
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
+CHAT_SYSTEM_PROMPT = (
+    "You are a friendly assistant for gardening and cooking. "
+    "Answer questions helpfully about growing herbs, vegetables, planting tips, recipes, "
+    "ingredients, and meal ideas. Keep responses concise and practical."
+)
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    if not OPENAI_API_KEY:
+        return jsonify({
+            'error': 'Chat is not configured. Add OPENAI_API_KEY to your environment variables.',
+            'reply': None,
+        }), 503
+
+    data = request.get_json() or {}
+    message = (data.get('message') or '').strip()
+    if not message:
+        return jsonify({'error': 'No message provided'}), 400
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {'role': 'system', 'content': CHAT_SYSTEM_PROMPT},
+                {'role': 'user', 'content': message},
+            ],
+            max_tokens=500,
+        )
+        content = (response.choices[0].message.content or '').strip()
+        return jsonify({'reply': content or "I'm not sure how to respond to that."})
+    except Exception as e:
+        err_msg = str(e) or 'Chat service error'
+        if 'api_key' in err_msg.lower() or 'authentication' in err_msg.lower():
+            err_msg = 'Invalid API key. Check your OPENAI_API_KEY.'
+        elif 'rate' in err_msg.lower() or 'quota' in err_msg.lower():
+            err_msg = 'Rate limit or quota exceeded. Try again later.'
+        return jsonify({'error': err_msg, 'reply': None}), 502
+
 
 if __name__ == '__main__':
     import os

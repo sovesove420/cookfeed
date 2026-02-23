@@ -143,6 +143,7 @@
     <div class="header">
         <a class="back-btn" href="{{ url_for('home') }}">←</a>
         <span class="profile-username" style="margin:0;font-size:18px;">{{ user.username }}</span>
+        <a href="{{ url_for('gardening') }}" class="back-btn" style="margin-left:auto;color:#7db87d;text-decoration:none;" title="Gardening">🌱</a>
     </div>
 
     <div class="profile-section">
@@ -182,5 +183,7 @@
             </div>
         {% endif %}
     </div>
+
+    {% include '_chat_widget.html' %}
 </body>
 </html>

@@ -1,7 +1,9 @@
 cloudinary
 flask
+openai
 flask-login
 flask-sqlalchemy
 gunicorn
 pillow
 werkzeug
+pg8000
